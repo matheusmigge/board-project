@@ -1,11 +1,7 @@
 package dio.board_project.ui;
 
 import dio.board_project.model.Board;
-import dio.board_project.model.BoardColumn;
-import dio.board_project.repository.BoardRepository;
-import dio.board_project.repository.BoardColumnRepository;
 import dio.board_project.service.BoardService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,10 +19,7 @@ public class MainMenu {
     private BoardService boardService;
 
     @Autowired
-    private BoardRepository boardRepository;
-
-    @Autowired
-    private BoardColumnRepository columnRepository;
+    private BoardMenu boardMenu; // Injetar o BoardMenu
 
     public void execute() {
         System.out.println("Bem-vindo ao gerenciador de boards, escolha a opção desejada");
@@ -47,46 +40,41 @@ public class MainMenu {
     }
 
     private void createBoard() {
-        Board board = new Board();
         System.out.println("Informe o nome do seu board:");
-        board.setNome(scanner.next());
+        String boardName = scanner.next();
 
         System.out.println("Seu board terá colunas além das 3 padrões? Se sim, informe quantas, senão digite '0'");
         int additionalColumns = scanner.nextInt();
 
-        List<BoardColumn> columns = new ArrayList<>();
-
         System.out.println("Informe o nome da coluna inicial do board:");
-        BoardColumn initialColumn = createColumn(scanner.next(), "Inicial", 0, board);
-        columns.add(initialColumn);
+        String initialColumn = scanner.next();
 
+        List<String> intermediateColumns = new ArrayList<>();
         for (int i = 0; i < additionalColumns; i++) {
             System.out.println("Informe o nome da coluna intermediária:");
-            BoardColumn pendingColumn = createColumn(scanner.next(), "Pendente", i + 1, board);
-            columns.add(pendingColumn);
+            intermediateColumns.add(scanner.next());
         }
 
         System.out.println("Informe o nome da coluna final:");
-        BoardColumn finalColumn = createColumn(scanner.next(), "Final", additionalColumns + 1, board);
-        columns.add(finalColumn);
+        String finalColumn = scanner.next();
 
         System.out.println("Informe o nome da coluna de cancelamento:");
-        BoardColumn cancelColumn = createColumn(scanner.next(), "Cancelado", additionalColumns + 2, board);
-        columns.add(cancelColumn);
+        String cancelColumn = scanner.next();
 
-        boardRepository.save(board);
-        columnRepository.saveAll(columns);
-
+        boardService.createBoard(boardName, additionalColumns, initialColumn, finalColumn, cancelColumn, intermediateColumns);
         System.out.println("Board criado com sucesso!");
     }
 
     private void selectBoard() {
         System.out.println("Informe o ID do board que deseja selecionar:");
         long id = scanner.nextLong();
-        Optional<Board> boardOpt = boardRepository.findById(id);
+        Optional<Board> boardOpt = boardService.getBoardById(id);
 
         boardOpt.ifPresentOrElse(
-            board -> System.out.println("Board selecionado: " + board.getNome()),
+            board -> {
+                System.out.println("Board selecionado: " + board.getNome());
+                boardMenu.execute(board); // Executar BoardMenu com o board selecionado
+            },
             () -> System.out.println("Não foi encontrado um board com ID " + id)
         );
     }
@@ -94,20 +82,10 @@ public class MainMenu {
     private void deleteBoard() {
         System.out.println("Informe o ID do board que será excluído:");
         long id = scanner.nextLong();
-        if (boardRepository.existsById(id)) {
-            boardRepository.deleteById(id);
+        if (boardService.deleteBoard(id)) {
             System.out.println("O board " + id + " foi excluído.");
         } else {
             System.out.println("Não foi encontrado um board com ID " + id);
         }
-    }
-
-    private BoardColumn createColumn(String name, String type, int order, Board board) {
-        BoardColumn column = new BoardColumn();
-        column.setNome(name);
-        column.setTipo(type);
-        column.setOrdem(order);
-        column.setBoard(board);
-        return column;
     }
 }
