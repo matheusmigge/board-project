@@ -6,7 +6,7 @@ Projeto de um board de gerenciamento de tarefas, inspirado no Trello, desenvolvi
 - **Java 17**: Utilizado para garantir compatibilidade e desempenho otimizado.
 - **Spring Boot 3**: Framework para desenvolvimento rápido e eficiente de aplicações Java.
 - **Spring Data JPA**: Facilita a interação com bancos de dados SQL, abstraindo a camada de persistência.
-- **H2 Database**: Banco de dados em memória para testes e desenvolvimento rápido.
+- **MySQL**: Banco de dados relacional utilizado para armazenar os dados da aplicação.
 - **Lombok**: Reduz a verbosidade do código ao gerar automaticamente getters, setters e construtores.
 
 ## Estrutura do Projeto
